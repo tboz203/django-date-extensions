@@ -114,13 +114,16 @@ prefix_date_re = re.compile(r'^([a-zA-Z]+) (\d{4})$')
 prefix_date_reverse_re = re.compile(r'^(\d{4}) ([a-zA-Z]+)$')
 
 
-class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)):
+class ApproximateDateField(models.CharField):
     """A model field to store ApproximateDate objects in the database
        (as a CharField because MySQLdb intercepts dates from the
        database and forces them to be datetime.date()s."""
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 10
         super(ApproximateDateField, self).__init__(*args, **kwargs)
+
+    # def from_db_value(self, value, expression, connection, context):
+    #     return self.to_python(value)
 
     def to_python(self, value):
         if value in (None, ''):
@@ -173,7 +176,7 @@ class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)
             return 'future'
         if value == 'past':
             return 'past'
-            
+
         prefix_date = prefix_date_re.search(value)
         prefix_date_reverse = prefix_date_reverse_re.search(value)
         ansi_date = ansi_date_re.search(value)
